@@ -5,7 +5,9 @@ if (app.documents.length > 0) {
 var myDocument = app.activeDocument;  
 var theName= myDocument.name.match(/(.*)\.[^\.]+$/)[1];  
 var thePath = myDocument.path;  
-var theLayer = myDocument.activeLayer;  
+var theLayer = myDocument.activeLayer; 
+//var theLayer = myDocument.layers["artwork"];
+
 
 // psd options;  
 psdOpts = new PhotoshopSaveOptions();  
@@ -24,17 +26,31 @@ else {
         // Back up the old layer size and restore it at the beginning of each loop iteration.
         var defaultWidth = theLayer.bounds[2] - theLayer.bounds[0];
         var defaultHeight = theLayer.bounds[3] - theLayer.bounds[1];
+        var centerX = (theLayer.bounds[2] + theLayer.bounds[0])/2;
+        var centerY = (theLayer.bounds[3] + theLayer.bounds[1])/2;
 
-        for (var m = 0; m < theFiles.length; m++) {         
+        for (var m = 0; m < theFiles.length; m++) {   
             //Get width and height, to determine which way to scale.
             var oldWidth = theLayer.bounds[2] - theLayer.bounds[0];
             var oldHeight = theLayer.bounds[3] - theLayer.bounds[1];
+            var oldCenterX = (theLayer.bounds[2] + theLayer.bounds[0])/2;
+            var oldCenterY = (theLayer.bounds[3] + theLayer.bounds[1])/2;
 
+            //Check to see if the size needs to be reset
             if ((oldWidth != defaultWidth) || (oldHeight != defaultHeight)) {
                 //Set default layer size for each iteration, so the size does not grow throughout the iterations.
-                var resizeWidth = (defaultWidth / oldWidth) * 100;
-                var resizeHeight = (defaultHeight / oldHeight) * 100;
-                theLayer.resize(resizeWidth, resizeHeight, AnchorPosition.MIDDLECENTER);
+                // var resizeWidth = (defaultWidth / oldWidth) * 100;
+                // var resizeHeight = (defaultHeight / oldHeight) * 100;
+                // theLayer.resize(resizeWidth, resizeHeight, AnchorPosition.MIDDLECENTER);
+                theLayer.resize(new UnitValue(defaultWidth,'in') ,new UnitValue(defaultWidth,'in'), AnchorPosition.MIDDLECENTER);
+            }
+
+            //Check to see if the image needs to be moved back to the default center.
+            if ((oldCenterY != centerY) || (oldCenterX != centerX)) {
+                var deltaX = centerX - oldCenterX;  
+                var deltaY = centerY - oldCenterY;  
+                // move the layer into position  
+                theLayer.translate(deltaX, deltaY);
             }
 
             theLayer = replaceContents(theFiles[m]);
