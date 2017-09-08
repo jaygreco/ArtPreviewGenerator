@@ -22,38 +22,48 @@ else {
     if (theFiles) {  
         // work through the array 
         // Back up the old layer size and restore it at the beginning of each loop iteration.
-            var defaultWidth = theLayer.bounds[2] - theLayer.bounds[0];
-            var defaultHeight = theLayer.bounds[3] - theLayer.bounds[1];
+        var defaultWidth = theLayer.bounds[2] - theLayer.bounds[0];
+        var defaultHeight = theLayer.bounds[3] - theLayer.bounds[1];
+        $.writeln("defaultHeight: ", defaultHeight, ", defaultWidth: ", defaultWidth);
 
         for (var m = 0; m < theFiles.length; m++) {         
             //Get width and height, to determine which way to scale.
+            $.writeln("Iteration ", m);
             var oldWidth = theLayer.bounds[2] - theLayer.bounds[0];
             var oldHeight = theLayer.bounds[3] - theLayer.bounds[1];
+            $.writeln("oldWidth: ", oldWidth, " oldHeight: ", oldHeight);
 
             if ((oldWidth != defaultWidth) || (oldHeight != defaultHeight)) {
+                $.writeln("scaling the frame back to default");
                 //Set default layer size for each iteration, so the size does not grow throughout the iterations.
-                var resizeHeight = (defaultHeight / oldHeight) * 100;
                 var resizeWidth = (defaultWidth / oldWidth) * 100;
-                theLayer.resize();
+                var resizeHeight = (defaultHeight / oldHeight) * 100;
+                theLayer.resize(resizeWidth, resizeHeight, AnchorPosition.MIDDLECENTER);
             }
 
             theLayer = replaceContents(theFiles[m]);
 
+            //Set width to width of defaultWidth as a starting point
             var newWidth = theLayer.bounds[2] - theLayer.bounds[0];
-            var newHeight = theLayer.bounds[3] - theLayer.bounds[1];
+            var newSize = (defaultWidth / newWidth) * 100;
+            theLayer.resize(newSize, newSize, AnchorPosition.MIDDLECENTER); 
 
+            var newWidth = theLayer.bounds[2] - theLayer.bounds[0];
+            $.writeln("after scaling: newWidth: ", newWidth);
             //Determine whether the image is landscape (width>height) or portrait
             if (newWidth < defaultWidth) {
                 //scale to fit the width to the frame
-                var newSize = (defaultHeight / newHeight) * 100;  
+                var newSize = (defaultWidth / newWidth) * 100;
+                theLayer.resize(newSize, newSize, AnchorPosition.MIDDLECENTER);            
             }
 
-            else {
-                //Newsize is in percentage, so scale both equally
-                var newSize = (defaultWidth / newWidth) * 100;  
+            var newHeight = theLayer.bounds[3] - theLayer.bounds[1];
+            $.writeln("after scaling: newHeight: ", newHeight);
+            if (newHeight < defaultHeight) {
+                //scale to fit the width to the frame
+                var newSize = (defaultHeight / newHeight) * 100;
+                theLayer.resize(newSize, newSize, AnchorPosition.MIDDLECENTER);           
             }
-            
-            theLayer.resize(newSize, newSize, AnchorPosition.MIDDLECENTER);
 
             var theNewName = theFiles[m].name.match(/(.*)\.[^\.]+$/)[1];  
             saveJPEG(myDocument, new File(thePath+"/"+theName+"_"+theNewName+".jpg"), 12);    
